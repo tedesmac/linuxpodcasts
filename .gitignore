@@ -1,4 +1,4 @@
-credentials.json
+*.json
 
 # Emacs temp files
 ~*
