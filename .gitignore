@@ -1,0 +1,19 @@
+credentials.json
+
+# Emacs temp files
+~*
+
+# Intellij
+.idea
+
+# Python
+__pycache__
+.venv
+venv
+
+# SQLite
+*.sqlite
+*.db
+
+# VSCode
+.vscode
