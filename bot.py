@@ -28,44 +28,83 @@ SOFTWARE.
 from datetime import datetime
 import json
 import feedparser
+import praw
 import time
+
+from podcasts import podcasts as linux_podcasts
+
+
+def login() -> praw.Reddit:
+    with open('credentials.json', 'r') as file:
+        credentials = json.loads(file.read())
+        reddit = praw.Reddit(
+            client_id=credentials['client_id'],
+            client_secret=credentials['client_secret'],
+            password=credentials['password'],
+            user_agent='r/linuxpodcasts\'s bot',
+            username=credentials['user']
+        )
+    return reddit
+
+
+def submit_post(podcast: str, title: str, link: str):
+    pass
+
+
+def main():
+    reddit = login()
+    subreddit = reddit.subreddit('linuxpodcasts')
+
+    last_updated_all = {}
+
+    while True:
+        now = datetime.now()
+
+        try:
+            with open('last_loop.json') as file:
+                last_loop = datetime(*json.loads(file.read()))
+        except (FileNotFoundError, TypeError):
+            last_loop = datetime.now()
+
+        for podcast in linux_podcasts:
+            name, href = podcast
+
+            last_updated = last_updated_all.get(name, now)
+            delta = now - last_updated
+
+            # Only updates feeds after a day
+            if delta.total_seconds() > 60*60*24:
+                feed = feedparser.parse(href)
+                for entry in feed.entries:
+                    published = datetime(*entry.published_parsed[:6])
+                    delta = last_loop - published
+                    if delta.total_seconds() < 0:
+                        title = entry.title
+                        link = entry.link
+                        # pulish to reddit
+                        # subreddit.submit('{} - {}'.format(name, title), url=link)
+                        print(name, title, published)
+                        # sleeps 16 minutes before posting anything else
+                        time.sleep(16 * 60)
+                    else:
+                        break
+
+            last_updated_all[name] = now
+
+        with open('last_updated.json', 'w') as file:
+            file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
+                now.year,
+                now.month,
+                now.day,
+                now.hour,
+                now.minute,
+                now.second,
+                now.microsecond
+            ))
+
+        # sleeps for 1 hour
+        time.sleep(60*60)
 
 
 if __name__ == '__main__':
-    with open('podcasts.json') as file:
-        file_content = file.read()
-        try:
-            data = json.loads(file_content)
-        except json.decoder.JSONDecodeError:
-            print('Error: Unable to decode JSON file')
-
-    try:
-        now = datetime.now()
-        last_updated = datetime(*data.get('last_updated', [2000, 1, 1]))
-        podcasts = data.get('podcasts', [])
-        for i, p in enumerate(podcasts):
-            feed = feedparser.parse(p['href'])
-            # Updates name and href
-            podcasts[i]['name'] = feed.feed.title
-            podcasts[i]['href'] = feed.href
-            entries = feed.entries
-            for entry in entries:
-                title = entry.title
-                link = entry.link
-                published = datetime(*entry.published_parsed[:6])
-                delta = last_updated - published
-                if delta.total_seconds() < 0:
-                    # pulish to reddit
-                    print(title, link)
-                else:
-                    break
-        # TODO - Uncomment the following code in the production section
-        # data = {
-        #    'last_updated': [now.year, now.month, now.day, now.hour, now.minute, now.second, now.microsecond],
-        #    'podcasts': podcasts
-        # }
-        # content = json.dumps(data, sort_keys=True)
-        # with open('podcasts.json', 'w') as file:
-        #    file.write(content)
-    except Exception as e:
-        print(e)
+    main()
