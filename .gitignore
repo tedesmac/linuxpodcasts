@@ -1,3 +1,4 @@
+*.log
 *.json
 
 # Emacs temp files

@@ -24,15 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from datetime import datetime
 import json
 import feedparser
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 import praw
 import time
 
 from podcasts import podcasts as linux_podcasts
+
+
+FILE_NAME = 'last_loop.json'
 
 
 def main():
@@ -45,14 +49,37 @@ def main():
     )
     subreddit = reddit.subreddit('linuxpodcasts')
 
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    handler = RotatingFileHandler(
+        'run.log',
+        maxBytes=1024*1024,
+        backupCount=10,
+    )
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.INFO)
+
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
+
+    logger.info('Loop started,')
     while True:
         now = datetime.now()
 
         try:
-            with open('last_loop.json') as file:
+            with open(FILE_NAME) as file:
                 last_loop = datetime(*json.loads(file.read()))
+                logger.info('{} readed with date {}'.format(
+                    FILE_NAME, last_loop
+                ))
         except (FileNotFoundError, TypeError):
             last_loop = datetime.now()
+            logger.info(
+                'Could not read {}, last_loop variable will be set to {}'.format(
+                    FILE_NAME,
+                    now
+                )
+            )
 
         for podcast in linux_podcasts:
             name, href = podcast
@@ -63,15 +90,20 @@ def main():
                 if delta.total_seconds() < 0:
                     title = entry.title
                     link = entry.link
-                    # pulish to reddit
                     # subreddit.submit('{} - {}'.format(name, title), url=link)
-                    print(name, title, published)
+                    logger.info(
+                        'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
+                            name, title, link
+                        )
+                    )
                     # sleeps 20 minutes before posting anything else
-                    time.sleep(20 * 60)
+                    logger.info('Script will halt for 20 minutes.')
+                    time.sleep(20*60)
+                    logger.info('Script resumed.')
                 else:
                     break
 
-        with open('last_updated.json', 'w') as file:
+        with open(FILE_NAME, 'w') as file:
             file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
                 now.year,
                 now.month,
@@ -81,8 +113,10 @@ def main():
                 now.second,
                 now.microsecond
             ))
+            logger.info('{} writted'.format(FILE_NAME))
 
         # sleeps for 1 hour
+        logger.info('Loop will halt for 1 hour.')
         time.sleep(60*60)
 
 
