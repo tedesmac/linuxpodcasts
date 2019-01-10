@@ -113,11 +113,13 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
     for podcast in linux_podcasts:
         name, href = podcast
         feed = feedparser.parse(href)
+
         if len(feed.entries) == 0:
             logging.warning(
                 'Podcast \'{}\' doesn\'t have a feed'.format(name)
             )
-        for entry in feed.entries:
+        else:
+            entry = feed.entries[0]
             published = datetime(*entry.published_parsed[:6])
             delta = last_loop - published
             if delta.total_seconds() < 0:
@@ -135,8 +137,6 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
                 logging.info('Script will halt for 20 minutes.')
                 time.sleep(20*60)
                 logging.info('Script resumed.')
-            else:
-                break
 
     with open(FILE_NAME, 'w') as file:
         file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
