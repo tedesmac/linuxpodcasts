@@ -27,7 +27,7 @@ podcasts = [
     ('.XPenguin', 'http://xpenguin.club/rss.xml'),
     ('Advance Tech Podcast', 'https://advancetechmedia.org/episode/index.xml'),
     ('Ask Noah', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC6fENpYcDzxfxqGqrsstZRA'),
-    ('Bad Boltage', 'https://www.badvoltage.org/feed/ogg/'),
+    ('Bad Voltage', 'https://www.badvoltage.org/feed/ogg/'),
     ('Best Linux Games',
      'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'),
     ('Boiling Steam', 'https://boilingsteam.com/feed/podcast/boilingsteam-regular'),
