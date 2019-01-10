@@ -24,6 +24,28 @@ SOFTWARE.
 
 podcasts = [
     # (Podcast's name,  RSS feed url)
+    ('.XPenguin', 'http://xpenguin.club/rss.xml'),
+    ('Advance Tech Podcast', 'https://advancetechmedia.org/episode/index.xml'),
+    ('Ask Noah', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC6fENpYcDzxfxqGqrsstZRA'),
+    ('Bad Boltage', 'https://www.badvoltage.org/feed/ogg/'),
+    ('Best Linux Games',
+     'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'),
+    ('Boiling Steam', 'https://boilingsteam.com/feed/podcast/boilingsteam-regular'),
+    ('Bryan Lunduke', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCglkWuyZDppWD2BVsyI4r3A'),
+    ('Bug Report', 'https://bugreport.co.uk/bug_report_ogg.rss'),
+    ('Destination Linux', 'https://destinationlinux.org/feed/mp3/'),
+    ('Floss Weekly', 'http://feeds.twit.tv/floss.xml'),
+    ('Free as in Freedom', 'http://faif.us/feeds/cast-ogg/'),
+    ('Going Linux', 'http://goinglinux.com/oggpodcast.xml'),
+    ('Jupiter Broadcasting', 'http://feed.jupiter.zone/allshows'),
     ('Late Night Linux', 'https://latenightlinux.com/feed/all'),
-    ('Ubuntu Podcast', 'http://ubuntupodcast.org/feed/podcast/')
+    ('Linux Game Cast', 'https://linuxgamecast.com/feed/'),
+    ('Linux Kernel Podcast', 'http://jcm.libsyn.com/rss'),
+    ('Matt Hartley', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCbHXJGd7c8Hy4z0-YX1Jf3Q'),
+    ('mintCast', 'https://mintcast.org/category/ogg/feed'),
+    ('Mostly Linux', 'http://mostlylinux.libsyn.com/rss'),
+    ('Open Source Security Podcast',
+     'https://opensourcesecuritypodcast.libsyn.com/rss'),
+    ('Ubuntu Podcast', 'http://ubuntupodcast.org/feed/podcast/'),
+    ('Ubuntu Security Podcast', 'https://ubuntusecuritypodcast.org/episode/index.xml'),
 ]
