@@ -28,34 +28,22 @@ SOFTWARE.
 from datetime import datetime
 import json
 import feedparser
+import os
 import praw
 import time
 
 from podcasts import podcasts as linux_podcasts
 
 
-def login() -> praw.Reddit:
-    with open('credentials.json', 'r') as file:
-        credentials = json.loads(file.read())
-        reddit = praw.Reddit(
-            client_id=credentials['client_id'],
-            client_secret=credentials['client_secret'],
-            password=credentials['password'],
-            user_agent='r/linuxpodcasts\'s bot',
-            username=credentials['user']
-        )
-    return reddit
-
-
-def submit_post(podcast: str, title: str, link: str):
-    pass
-
-
 def main():
-    reddit = login()
+    reddit = praw.Reddit(
+        client_id=os.environ['REDDIT_CLIENT_ID'],
+        client_secret=os.environ['REDDIT_CLIENT_SECRET'],
+        password=os.environ['REDDIT_PASSWORD'],
+        user_agent=os.environ['REDDIT_USER_AGENT'],
+        username=os.environ['REDDIT_USERNAME']
+    )
     subreddit = reddit.subreddit('linuxpodcasts')
-
-    last_updated_all = {}
 
     while True:
         now = datetime.now()
@@ -68,28 +56,20 @@ def main():
 
         for podcast in linux_podcasts:
             name, href = podcast
-
-            last_updated = last_updated_all.get(name, now)
-            delta = now - last_updated
-
-            # Only updates feeds after a day
-            if delta.total_seconds() > 60*60*24:
-                feed = feedparser.parse(href)
-                for entry in feed.entries:
-                    published = datetime(*entry.published_parsed[:6])
-                    delta = last_loop - published
-                    if delta.total_seconds() < 0:
-                        title = entry.title
-                        link = entry.link
-                        # pulish to reddit
-                        # subreddit.submit('{} - {}'.format(name, title), url=link)
-                        print(name, title, published)
-                        # sleeps 16 minutes before posting anything else
-                        time.sleep(16 * 60)
-                    else:
-                        break
-
-            last_updated_all[name] = now
+            feed = feedparser.parse(href)
+            for entry in feed.entries:
+                published = datetime(*entry.published_parsed[:6])
+                delta = last_loop - published
+                if delta.total_seconds() < 0:
+                    title = entry.title
+                    link = entry.link
+                    # pulish to reddit
+                    # subreddit.submit('{} - {}'.format(name, title), url=link)
+                    print(name, title, published)
+                    # sleeps 20 minutes before posting anything else
+                    time.sleep(20 * 60)
+                else:
+                    break
 
         with open('last_updated.json', 'w') as file:
             file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
