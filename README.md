@@ -19,18 +19,18 @@ $ python3 podcast_bot.py linuxpodcasts
 
 The bot supports the following optional arguments:
 
-- `--client-id` - Reddit client id<a href="footnote-1"><sup>1</sup></a>.
-  E.V. `REDDIT_CLIENT_ID`<a href="footnote-1"><sup>2</sup></a>
-- `--client-secret` - Reddit client secret<a href="footnote-1"><sup>1</sup></a>.
-  E.V. `REDDIT_CLIENT_SECRET`<a href="footnote-1"><sup>2</sup></a>
+- `--client-id` - Reddit client id<a href="#footnote-1"><sup>1</sup></a>.
+  E.V. `REDDIT_CLIENT_ID`<a href="#footnote-2"><sup>2</sup></a>
+- `--client-secret` - Reddit client secret<a href="#footnote-1"><sup>1</sup></a>.
+  E.V. `REDDIT_CLIENT_SECRET`<a href="#footnote-2"><sup>2</sup></a>
 - `--debug` - The bot won't submit content to reddit.
 - `--log` - Path to the log file.
 - `-p`, `password` - Reddit user password.
-  E.V. `REDDIT_CLIENT_PASSWORD`<a href="footnote-1"><sup>2</sup></a>
+  E.V. `REDDIT_CLIENT_PASSWORD`<a href="#footnote-2"><sup>2</sup></a>
 - `--user-agent` - Bot user agent. Can be any string.
-  E.V. `REDDIT_USER_AGENT`<a href="footnote-1"><sup>2</sup></a>
+  E.V. `REDDIT_USER_AGENT`<a href="#footnote-2"><sup>2</sup></a>
 - `-u`, `--username` - Reddit username.
-  E.V. `REDDIT_USERNAME`<a href="footnote-1"><sup>2</sup></a>
+  E.V. `REDDIT_USERNAME`<a href="#footnote-2"><sup>2</sup></a>
 
 ---
 
