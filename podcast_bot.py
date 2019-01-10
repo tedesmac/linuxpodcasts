@@ -129,6 +129,10 @@ def main(client_id, client_secret, debug, log, password, subreddit, user_agent, 
         for podcast in linux_podcasts:
             name, href = podcast
             feed = feedparser.parse(href)
+            if len(feed.entries) == 0:
+                logger.warning(
+                    'Podcast \'{}\' doesn\'t have a feed'.format(name)
+                )
             for entry in feed.entries:
                 published = datetime(*entry.published_parsed[:6])
                 delta = last_loop - published
