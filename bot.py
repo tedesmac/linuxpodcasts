@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import click
 from datetime import datetime
 import json
 import feedparser
 import logging
 from logging.handlers import RotatingFileHandler
-import os
 import praw
 import time
 
@@ -39,19 +39,64 @@ from podcasts import podcasts as linux_podcasts
 FILE_NAME = 'last_loop.json'
 
 
-def main():
+@click.option(
+    '--client-id',
+    envvar='REDDIT_CLIENT_ID',
+    help='reddit client id.'
+)
+@click.option(
+    '--client-secret',
+    envvar='REDDIT_CLIENT_SECRET',
+    help='reddit client secret.'
+)
+@click.command()
+@click.option(
+    '--debug',
+    is_flag=True,
+    help='Run bot in debug mode.'
+)
+@click.option(
+    '--log',
+    default='run.log',
+    help='Log file path.',
+    type=click.Path(writable=True, resolve_path=True)
+)
+@click.option(
+    '--password',
+    '-p',
+    envvar='REDDIT_PASSWORD',
+    help='reddit user password.'
+)
+@click.option(
+    '--user-agent',
+    envvar='REDDIT_USER_AGENT',
+    help='reddit user agent.'
+)
+@click.option(
+    '--username',
+    '-u',
+    envvar='REDDIT_USERNAME',
+    help='reddit user.'
+)
+@click.argument('subreddit', nargs=1)
+def main(client_id, client_secret, debug, log, password, subreddit, user_agent, username):
+    """
+    Simple bot that submits podcasts to reddit.
+
+    Usage:\tpython3 bot.py askreddit
+    """
     reddit = praw.Reddit(
-        client_id=os.environ['REDDIT_CLIENT_ID'],
-        client_secret=os.environ['REDDIT_CLIENT_SECRET'],
-        password=os.environ['REDDIT_PASSWORD'],
-        user_agent=os.environ['REDDIT_USER_AGENT'],
-        username=os.environ['REDDIT_USERNAME']
+        client_id=client_id,
+        client_secret=client_secret,
+        password=password,
+        user_agent=user_agent,
+        username=username
     )
-    subreddit = reddit.subreddit('linuxpodcasts')
+    subreddit = reddit.subreddit(subreddit)
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler = RotatingFileHandler(
-        'run.log',
+        log,
         maxBytes=1024*1024,
         backupCount=10,
     )
@@ -90,7 +135,9 @@ def main():
                 if delta.total_seconds() < 0:
                     title = entry.title
                     link = entry.link
-                    # subreddit.submit('{} - {}'.format(name, title), url=link)
+                    if not debug:
+                        subreddit.submit(
+                            '{} - {}'.format(name, title), url=link)
                     logger.info(
                         'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
                             name, title, link
