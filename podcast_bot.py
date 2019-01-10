@@ -56,12 +56,6 @@ FILE_NAME = 'last_loop.json'
     help='Run bot in debug mode.'
 )
 @click.option(
-    '--log',
-    default='run.log',
-    help='Log file path.',
-    type=click.Path(writable=True, resolve_path=True)
-)
-@click.option(
     '--password',
     '-p',
     envvar='REDDIT_PASSWORD',
@@ -79,7 +73,7 @@ FILE_NAME = 'last_loop.json'
     help='reddit user.'
 )
 @click.argument('subreddit', nargs=1)
-def main(client_id, client_secret, debug, log, password, subreddit, user_agent, username):
+def main(client_id, client_secret, debug, password, subreddit, user_agent, username):
     """
     Simple bot that submits podcasts to reddit.
 
@@ -94,81 +88,69 @@ def main(client_id, client_secret, debug, log, password, subreddit, user_agent, 
     )
     subreddit = reddit.subreddit(subreddit)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler = RotatingFileHandler(
-        log,
-        maxBytes=1024*1024,
-        backupCount=10,
+    logging.basicConfig(
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        level=logging.INFO
     )
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
 
-    logger = logging.getLogger('root')
-    logger.setLevel(logging.INFO)
-    logger.addHandler(handler)
+    now = datetime.now()
 
-    logger.info('Loop started,')
-    while True:
-        now = datetime.now()
-
-        try:
-            with open(FILE_NAME) as file:
-                last_loop = datetime(*json.loads(file.read()))
-                logger.info('{} readed with date {}'.format(
-                    FILE_NAME, last_loop
-                ))
-        except (FileNotFoundError, TypeError):
-            last_loop = datetime.now()
-            logger.info(
-                'Could not read {}, last_loop variable will be set to {}'.format(
-                    FILE_NAME,
-                    now
-                )
-            )
-
-        for podcast in linux_podcasts:
-            name, href = podcast
-            feed = feedparser.parse(href)
-            if len(feed.entries) == 0:
-                logger.warning(
-                    'Podcast \'{}\' doesn\'t have a feed'.format(name)
-                )
-            for entry in feed.entries:
-                published = datetime(*entry.published_parsed[:6])
-                delta = last_loop - published
-                if delta.total_seconds() < 0:
-                    title = entry.title
-                    link = entry.link
-                    if not debug:
-                        subreddit.submit(
-                            '{} - {}'.format(name, title), url=link)
-                    logger.info(
-                        'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
-                            name, title, link
-                        )
-                    )
-                    # sleeps 20 minutes before posting anything else
-                    logger.info('Script will halt for 20 minutes.')
-                    time.sleep(20*60)
-                    logger.info('Script resumed.')
-                else:
-                    break
-
-        with open(FILE_NAME, 'w') as file:
-            file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
-                now.year,
-                now.month,
-                now.day,
-                now.hour,
-                now.minute,
-                now.second,
-                now.microsecond
+    try:
+        with open(FILE_NAME) as file:
+            last_loop = datetime(*json.loads(file.read()))
+            logging.info('{} readed with date {}'.format(
+                FILE_NAME, last_loop
             ))
-            logger.info('{} writted'.format(FILE_NAME))
+    except (FileNotFoundError, TypeError):
+        last_loop = datetime.now()
+        logging.info(
+            'Could not read {}, last_loop variable will be set to {}'.format(
+                FILE_NAME,
+                now
+            )
+        )
 
-        # sleeps for 1 hour
-        logger.info('Loop will halt for 1 hour.')
-        time.sleep(60*60)
+    for podcast in linux_podcasts:
+        name, href = podcast
+        feed = feedparser.parse(href)
+        if len(feed.entries) == 0:
+            logging.warning(
+                'Podcast \'{}\' doesn\'t have a feed'.format(name)
+            )
+        for entry in feed.entries:
+            published = datetime(*entry.published_parsed[:6])
+            delta = last_loop - published
+            if delta.total_seconds() < 0:
+                title = entry.title
+                link = entry.link
+                if not debug:
+                    subreddit.submit(
+                        '{} - {}'.format(name, title), url=link)
+                logging.info(
+                    'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
+                        name, title, link
+                    )
+                )
+                # sleeps 20 minutes before posting anything else
+                logging.info('Script will halt for 20 minutes.')
+                time.sleep(20*60)
+                logging.info('Script resumed.')
+            else:
+                break
+
+    with open(FILE_NAME, 'w') as file:
+        file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
+            now.year,
+            now.month,
+            now.day,
+            now.hour,
+            now.minute,
+            now.second,
+            now.microsecond
+        ))
+        logging.info('{} writted'.format(FILE_NAME))
+
+    logging.info('Script execution finished at {}'.format(datetime.now()))
 
 
 if __name__ == '__main__':
