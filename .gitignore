@@ -1,5 +1,6 @@
 *.log
 *.json
+*.fish
 
 # Emacs temp files
 ~*

@@ -26,17 +26,68 @@ SOFTWARE.
 
 import click
 from datetime import datetime
-import json
 import feedparser
+import json
+import html
 import logging
 from logging.handlers import RotatingFileHandler
+from markdownify import markdownify
 import praw
+import re
 import time
 
 from podcasts import podcasts as linux_podcasts
 
 
 FILE_NAME = 'last_loop.json'
+RE_HTML_TAG = re.compile(r'<.*?>')
+RE_HTTP = re.compile(r'^https?://')
+
+
+def get_summary(entry) -> str:
+    try:
+        summary = entry.summary
+        if entry.summary_detail.type == 'text/html':
+            summary = remove_html(markdownify(summary))
+        return summary
+    except AttributeError:
+        return ''
+
+
+def format_comment(name: str, title: str, summary: str, link: str, rss_link: str) -> str:
+    comment = '# [{} - {}]({})\n---\n'.format(name, title, link)
+    comment += '{}\n---\n'.format(summary) if summary else ''
+    comment += '+ [RSS feed]({})'.format(rss_link)
+    return comment
+
+
+def is_repost(subreddit: praw.models.Subreddit, url: str) -> bool:
+    url = remove_protocol(url)
+    query = 'url:{}'.format(url)
+    logging.debug('is_repost - query: {}'. format(query))
+    search = subreddit.search(query)
+    posts = 0
+    for entry in search:
+        logging.debug(
+            'is_repost - entry: [title: {}, url: {}]'.format(
+                entry.title, entry.url
+            )
+        )
+        posts += 1
+    logging.debug('is_repost - posts: {}'.format(posts))
+    return posts > 0
+
+
+def remove_html(string: str) -> str:
+    return html.unescape(re.sub(RE_HTML_TAG, '', string))
+
+
+def remove_protocol(url: str) -> str:
+    match = RE_HTTP.search(url)
+    if match:
+        end = match.end(0)
+        return url[end:]
+    return url
 
 
 @click.option(
@@ -86,11 +137,15 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
         user_agent=user_agent,
         username=username
     )
+
+    if reddit.read_only:
+        raise 'Login error: Reddit instance is read only, can not submit posts'
+
     subreddit = reddit.subreddit(subreddit)
 
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',
-        level=logging.INFO
+        level=logging.DEBUG if debug else logging.INFO
     )
 
     now = datetime.now()
@@ -114,6 +169,8 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
         name, href = podcast
         feed = feedparser.parse(href)
 
+        logging.debug('Fetching {} feed'.format(name))
+
         if len(feed.entries) == 0:
             logging.warning(
                 'Podcast \'{}\' doesn\'t have a feed'.format(name)
@@ -122,21 +179,47 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
             entry = feed.entries[0]
             published = datetime(*entry.published_parsed[:6])
             delta = last_loop - published
+
             if delta.total_seconds() < 0:
                 title = entry.title
                 link = entry.link
-                if not debug:
-                    subreddit.submit(
-                        '{} - {}'.format(name, title), url=link)
-                logging.info(
-                    'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
-                        name, title, link
+                summary = get_summary(entry)
+
+                logging.debug(
+                    'Entry:\n\tTitle: {}\n\tSummary: {}\n\tLink: {}'.format(
+                        title, summary, link
                     )
                 )
-                # sleeps 20 minutes before posting anything else
-                logging.info('Script will halt for 20 minutes.')
-                time.sleep(20*60)
-                logging.info('Script resumed.')
+
+                if not is_repost(subreddit, link):
+                    if not debug:
+                        submission_id = subreddit.submit(
+                            '{} - {}'.format(name, title), url=link
+                        )
+                        submission = reddit.submission(id=submission_id)
+                        comment = format_comment(
+                            name, title, summary, link, href
+                        )
+                        submission.reply(comment)
+                        # TODO: Write a comment in post with podcast info
+                        logging.info('Comment: {}'.format(comment))
+                    logging.info(
+                        'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
+                            name, title, link
+                        )
+                    )
+
+                    if not debug:
+                        # sleeps 20 minutes before posting anything else
+                        logging.info('Script will halt for 20 minutes.')
+                        time.sleep(20*60)
+                        logging.info('Script resumed.')
+                else:
+                    logging.debug(
+                        'Entry is repost:\n\tPodcasts: {}\n\tTitle: {}\n\tLink: {}'.format(
+                            name, title, link
+                        )
+                    )
 
     with open(FILE_NAME, 'w') as file:
         file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
