@@ -179,7 +179,13 @@ def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss
     envvar='REDDIT_USERNAME',
     help='reddit user.'
 )
-def main(client_id, client_secret, debug, password, user_agent, username):
+@click.option(
+    '--sleep',
+    default=60,
+    type=click.INT,
+    help='Sleep time in minutes.'
+)
+def main(client_id, client_secret, debug, password, user_agent, username, sleep):
     """
     Simple bot that submits podcasts to r/linuxpodcasts
 
@@ -252,7 +258,7 @@ def main(client_id, client_secret, debug, password, user_agent, username):
         save_last_loop_date(now)
 
         # Sleeps for 1 hour before repeating the process
-        time.sleep(60*60 if not debug else 5)
+        time.sleep(60*sleep if not debug else 5)
 
 
 if __name__ == '__main__':
