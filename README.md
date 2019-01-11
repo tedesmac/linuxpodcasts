@@ -24,7 +24,6 @@ The bot supports the following optional arguments:
 - `--client-secret` - Reddit client secret<a href="#footnote-1"><sup>1</sup></a>.
   E.V. `REDDIT_CLIENT_SECRET`<a href="#footnote-2"><sup>2</sup></a>
 - `--debug` - The bot won't submit content to reddit.
-- `--log` - Path to the log file.
 - `-p`, `password` - Reddit user password.
   E.V. `REDDIT_CLIENT_PASSWORD`<a href="#footnote-2"><sup>2</sup></a>
 - `--user-agent` - Bot user agent. Can be any string.
