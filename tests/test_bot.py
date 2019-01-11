@@ -2,6 +2,7 @@ from feedparser import FeedParserDict
 
 from podcast_bot import (
     get_summary,
+    get_title,
     format_comment,
     remove_html_tags,
     remove_http_protocol
@@ -36,28 +37,48 @@ class TestGetSummary:
         assert 'A brief summary.' == get_summary(entry)
 
 
+class TestGetTitle:
+
+    def test_name_at_start(self):
+        name = 'Going Linux'
+        title = 'Going Linux #360 · Run your business on Linux - Part 2'
+        new_title = get_title(name, title)
+        assert new_title == title
+
+    def test_name_at_end(self):
+        name = 'BSD Now'
+        title = 'FOSS Clothing | BSD Now 280'
+        new_title = get_title(name, title)
+        assert new_title == title
+
+    def text_no_name(self):
+        name = '.XPenguin'
+        title = 'No News Is No News'
+        new_title = get_title(name, title)
+        assert new_title == '{} - {}'.format(name, title)
+
+
 class TestFormatComment:
 
     def test_with_summary(self):
-        name = 'Linux Podcast'
-        title = 'A title'
+        title = 'Linux Podcast - A title'
         summary = 'A brief summary.'
         link = 'http://example.org'
         rss_link = 'http://example.org'
         comment = '# [Linux Podcast - A title](http://example.org)\n---\n' + \
-                  'A brief summary.\n\n---\n+ [RSS feed](http://example.org)'
-        result = format_comment(name, title, summary, link, rss_link)
+            'A brief summary.\n\n---\n' + \
+            '+ [RSS feed](http://example.org)'
+        result = format_comment(title, summary, link, rss_link)
         assert result == comment
 
     def test_without_summary(self):
-        name = 'Linux Podcast'
-        title = 'A title'
+        title = 'Linux Podcast - A title'
         summary = ''
         link = 'http://example.org'
         rss_link = 'http://example.org'
         comment = '# [Linux Podcast - A title](http://example.org)\n---\n' + \
-                  '+ [RSS feed](http://example.org)'
-        result = format_comment(name, title, summary, link, rss_link)
+            '+ [RSS feed](http://example.org)'
+        result = format_comment(title, summary, link, rss_link)
         assert result == comment
 
 

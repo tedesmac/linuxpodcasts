@@ -72,8 +72,17 @@ def get_summary(entry: feedparser.FeedParserDict) -> str:
         return ''
 
 
-def format_comment(name: str, title: str, summary: str, link: str, rss_link: str) -> str:
-    comment = '# [{} - {}]({})\n---\n'.format(name, title, link)
+def get_title(name: str, title: str) -> str:
+    """
+    Adds podcast's name to title if it is not in it
+    """
+    name_lower = name.lower()
+    title_lower = title.lower()
+    return title if name_lower in title_lower else '{} - {}'.format(name, title)
+
+
+def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
+    comment = '# [{}]({})\n---\n'.format(title, link)
     comment += '{}\n\n---\n'.format(summary) if summary else ''
     comment += '+ [RSS feed]({})'.format(rss_link)
     return comment
@@ -115,9 +124,11 @@ def save_last_loop_date(date: datetime):
 
 
 def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss_link, title, summary, link):
-    submission_id = subreddit.submit('{} - {}'.format(name, title), url=link)
+    title = get_title(name, title)
+
+    submission_id = subreddit.submit(title, url=link)
     submission = reddit.submission(id=submission_id)
-    comment = format_comment(name, title, summary, link, rss_link)
+    comment = format_comment(title, summary, link, rss_link)
     submission.reply(comment)
 
     logging.info(
