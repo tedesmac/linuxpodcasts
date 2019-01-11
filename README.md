@@ -2,18 +2,8 @@
 
 To run the script Python 3 is required.
 
-```bash
+````bash
 $ python3 podcast_bot.py SUBREDDIT
-```
-
-Where SUBBREDDIT is the subreddit's name (without the `r/`) where you want to
-submit content.
-
-E.G.:
-
-```bash
-$ python3 podcast_bot.py linuxpodcasts
-```
 
 # Command line arguments
 
@@ -46,7 +36,7 @@ the name of the podcast, and the second element is the RSS feed's URL.
 
 ```python
     ('Late Night Linux', 'https://latenightlinux.com/feed/all'),
-```
+````
 
 # License
 

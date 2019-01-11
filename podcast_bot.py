@@ -176,12 +176,11 @@ def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss
     envvar='REDDIT_USERNAME',
     help='reddit user.'
 )
-@click.argument('subreddit', nargs=1)
-def main(client_id, client_secret, debug, password, subreddit, user_agent, username):
+def main(client_id, client_secret, debug, password, user_agent, username):
     """
-    Simple bot that submits podcasts to reddit.
+    Simple bot that submits podcasts to r/linuxpodcasts
 
-    Usage:\tpython3 bot.py askreddit
+    Usage:\tpython3 bot.py
     """
 
     logging.basicConfig(
@@ -201,7 +200,7 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
         if reddit.read_only:
             raise 'Login error: Reddit instance is read only, can not submit posts'
 
-        subreddit = reddit.subreddit(subreddit)
+        subreddit = reddit.subreddit('linuxpodcasts')
 
         now = datetime.now()
         last_loop = get_last_loop_date(now)
