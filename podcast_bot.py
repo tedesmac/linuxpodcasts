@@ -44,11 +44,11 @@ RE_HTML_TAG = re.compile(r'<.*?>')
 RE_HTTP = re.compile(r'^https?://')
 
 
-def get_summary(entry) -> str:
+def get_summary(entry: feedparser.FeedParserDict) -> str:
     try:
         summary = entry.summary
-        if entry.summary_detail.type == 'text/html':
-            summary = remove_html(markdownify(summary))
+        if entry.summary_detail.type in ('text/html', 'text/xml'):
+            summary = remove_html_tags(markdownify(summary))
         return summary
     except AttributeError:
         return ''
@@ -56,33 +56,25 @@ def get_summary(entry) -> str:
 
 def format_comment(name: str, title: str, summary: str, link: str, rss_link: str) -> str:
     comment = '# [{} - {}]({})\n---\n'.format(name, title, link)
-    comment += '{}\n---\n'.format(summary) if summary else ''
+    comment += '{}\n\n---\n'.format(summary) if summary else ''
     comment += '+ [RSS feed]({})'.format(rss_link)
     return comment
 
 
 def is_repost(subreddit: praw.models.Subreddit, url: str) -> bool:
-    url = remove_protocol(url)
+    url = remove_http_protocol(url)
     query = 'url:{}'.format(url)
-    logging.debug('is_repost - query: {}'. format(query))
     search = subreddit.search(query)
-    posts = 0
-    for entry in search:
-        logging.debug(
-            'is_repost - entry: [title: {}, url: {}]'.format(
-                entry.title, entry.url
-            )
-        )
-        posts += 1
-    logging.debug('is_repost - posts: {}'.format(posts))
-    return posts > 0
+    for entry_ in search:
+        return True
+    return False
 
 
-def remove_html(string: str) -> str:
+def remove_html_tags(string: str) -> str:
     return html.unescape(re.sub(RE_HTML_TAG, '', string))
 
 
-def remove_protocol(url: str) -> str:
+def remove_http_protocol(url: str) -> str:
     match = RE_HTTP.search(url)
     if match:
         end = match.end(0)
@@ -193,6 +185,7 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
 
                 if not is_repost(subreddit, link):
                     if not debug:
+                        comment = ''
                         submission_id = subreddit.submit(
                             '{} - {}'.format(name, title), url=link
                         )
@@ -201,13 +194,15 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
                             name, title, summary, link, href
                         )
                         submission.reply(comment)
-                        # TODO: Write a comment in post with podcast info
-                        logging.info('Comment: {}'.format(comment))
-                    logging.info(
-                        'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
-                            name, title, link
+
+                        logging.info(
+                            'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
+                                name, title, link
+                            )
                         )
-                    )
+                        logging.info('Replied to thread {} with comment {}'.format(
+                            submission.title, comment
+                        ))
 
                     if not debug:
                         # sleeps 20 minutes before posting anything else
