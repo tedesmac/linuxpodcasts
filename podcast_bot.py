@@ -88,9 +88,12 @@ def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
     return comment
 
 
-def is_repost(subreddit: praw.models.Subreddit, url: str) -> bool:
+def is_repost(subreddit: praw.models.Subreddit, url: str, title: str) -> bool:
     url = remove_http_protocol(url)
-    query = 'url:{}'.format(url)
+    if 'youtube' in url:
+        query = 'title:"{}"'.format(title)
+    else:
+        query = 'url:{}'.format(url)
     search = subreddit.search(query)
     for entry_ in search:
         return True
@@ -220,7 +223,7 @@ def main(client_id, client_secret, debug, password, user_agent, username):
             link = entry.link
             summary = get_summary(entry)
 
-            repost = is_repost(subreddit, link)
+            repost = is_repost(subreddit, link, title)
 
             if delta.total_seconds() < 0 and not repost and not debug:
                 submit_post(reddit, subreddit, name,
