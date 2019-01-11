@@ -44,6 +44,24 @@ RE_HTML_TAG = re.compile(r'<.*?>')
 RE_HTTP = re.compile(r'^https?://')
 
 
+def get_last_loop_date(now: datetime) -> datetime:
+    try:
+        with open(FILE_NAME) as file:
+            last_loop = datetime(*json.loads(file.read()))
+            logging.info('{} readed with date {}'.format(
+                FILE_NAME, last_loop
+            ))
+    except (FileNotFoundError, TypeError):
+        last_loop = datetime.now()
+        logging.info(
+            'Could not read {}, last_loop variable will be set to {}'.format(
+                FILE_NAME,
+                now
+            )
+        )
+    return last_loop
+
+
 def get_summary(entry: feedparser.FeedParserDict) -> str:
     try:
         summary = entry.summary
@@ -80,6 +98,38 @@ def remove_http_protocol(url: str) -> str:
         end = match.end(0)
         return url[end:]
     return url
+
+
+def save_last_loop_date(date: datetime):
+    with open(FILE_NAME, 'w') as file:
+        file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
+            date.year,
+            date.month,
+            date.day,
+            date.hour,
+            date.minute,
+            date.second,
+            date.microsecond
+        ))
+        logging.info('{} writted'.format(FILE_NAME))
+
+
+def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss_link, title, summary, link):
+    submission_id = subreddit.submit('{} - {}'.format(name, title), url=link)
+    submission = reddit.submission(id=submission_id)
+    comment = format_comment(name, title, summary, link, rss_link)
+    submission.reply(comment)
+
+    logging.info(
+        'New entry submitted:'
+        '\n\tTitle: {}'
+        '\n\tSummary: {}'
+        '\n\tLink: {}\n'.format(title, summary, link)
+    )
+    logging.info(
+        'Commented on entry for {}:'
+        '\nComment: {}\n'.format(title, comment)
+    )
 
 
 @click.option(
@@ -122,113 +172,74 @@ def main(client_id, client_secret, debug, password, subreddit, user_agent, usern
 
     Usage:\tpython3 bot.py askreddit
     """
-    reddit = praw.Reddit(
-        client_id=client_id,
-        client_secret=client_secret,
-        password=password,
-        user_agent=user_agent,
-        username=username
-    )
-
-    if reddit.read_only:
-        raise 'Login error: Reddit instance is read only, can not submit posts'
-
-    subreddit = reddit.subreddit(subreddit)
 
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(message)s',
         level=logging.DEBUG if debug else logging.INFO
     )
 
-    now = datetime.now()
-
-    try:
-        with open(FILE_NAME) as file:
-            last_loop = datetime(*json.loads(file.read()))
-            logging.info('{} readed with date {}'.format(
-                FILE_NAME, last_loop
-            ))
-    except (FileNotFoundError, TypeError):
-        last_loop = datetime.now()
-        logging.info(
-            'Could not read {}, last_loop variable will be set to {}'.format(
-                FILE_NAME,
-                now
-            )
+    while True:
+        reddit = praw.Reddit(
+            client_id=client_id,
+            client_secret=client_secret,
+            password=password,
+            user_agent=user_agent,
+            username=username
         )
 
-    for podcast in linux_podcasts:
-        name, href = podcast
-        feed = feedparser.parse(href)
+        if reddit.read_only:
+            raise 'Login error: Reddit instance is read only, can not submit posts'
 
-        logging.debug('Fetching {} feed'.format(name))
+        subreddit = reddit.subreddit(subreddit)
 
-        if len(feed.entries) == 0:
-            logging.warning(
-                'Podcast \'{}\' doesn\'t have a feed'.format(name)
-            )
-        else:
+        now = datetime.now()
+        last_loop = get_last_loop_date(now)
+
+        for podcast in linux_podcasts:
+            name, href = podcast
+            feed = feedparser.parse(href)
+
+            logging.debug('Fetching {} feed\n'.format(name))
+
+            # Only check the first entry
             entry = feed.entries[0]
             published = datetime(*entry.published_parsed[:6])
             delta = last_loop - published
 
-            if delta.total_seconds() < 0:
-                title = entry.title
-                link = entry.link
-                summary = get_summary(entry)
+            title = entry.title
+            link = entry.link
+            summary = get_summary(entry)
 
+            repost = is_repost(subreddit, link)
+
+            if delta.total_seconds() < 0 and not repost and not debug:
+                submit_post(reddit, subreddit, name,
+                            href, title, summary, link)
+
+                # sleeps 20 minutes before posting anything else
+                time.sleep(20*60)
+
+            elif debug and repost:
                 logging.debug(
-                    'Entry:\n\tTitle: {}\n\tSummary: {}\n\tLink: {}'.format(
-                        title, summary, link
-                    )
+                    'Repost for {}:'
+                    '\n\tTitle: {}'
+                    '\n\tSummary: {}'
+                    '\n\tLink: {}\n'.format(name, title, summary, link)
                 )
+                time.sleep(5)
+            elif debug:
+                logging.debug(
+                    'New entry for {}:'
+                    '\n\tTitle: {}'
+                    '\n\tSummary: {}'
+                    '\n\tLink: {}\n'.format(name, title, summary, link)
+                )
+                time.sleep(5)
 
-                if not is_repost(subreddit, link):
-                    if not debug:
-                        comment = ''
-                        submission_id = subreddit.submit(
-                            '{} - {}'.format(name, title), url=link
-                        )
-                        submission = reddit.submission(id=submission_id)
-                        comment = format_comment(
-                            name, title, summary, link, href
-                        )
-                        submission.reply(comment)
+        save_last_loop_date(now)
 
-                        logging.info(
-                            'Entry submitted.\n\tPodcast: {}\n\tTitle: {}\n\tLink: {}'.format(
-                                name, title, link
-                            )
-                        )
-                        logging.info('Replied to thread {} with comment {}'.format(
-                            submission.title, comment
-                        ))
-
-                    if not debug:
-                        # sleeps 20 minutes before posting anything else
-                        logging.info('Script will halt for 20 minutes.')
-                        time.sleep(20*60)
-                        logging.info('Script resumed.')
-                else:
-                    logging.debug(
-                        'Entry is repost:\n\tPodcasts: {}\n\tTitle: {}\n\tLink: {}'.format(
-                            name, title, link
-                        )
-                    )
-
-    with open(FILE_NAME, 'w') as file:
-        file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
-            now.year,
-            now.month,
-            now.day,
-            now.hour,
-            now.minute,
-            now.second,
-            now.microsecond
-        ))
-        logging.info('{} writted'.format(FILE_NAME))
-
-    logging.info('Script execution finished at {}'.format(datetime.now()))
+        # Sleeps for 1 hour before repeating the process
+        time.sleep(60*60 if not debug else 5)
 
 
 if __name__ == '__main__':
