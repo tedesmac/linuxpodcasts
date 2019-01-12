@@ -90,7 +90,7 @@ def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
 
 def is_repost(subreddit: praw.models.Subreddit, url: str, title: str) -> bool:
     url = remove_http_protocol(url)
-    if 'youtube' in url:
+    if 'youtube' in url or 'youtu.be' in url:
         query = 'title:"{}"'.format(title)
     else:
         query = 'url:{}'.format(url)
