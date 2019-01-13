@@ -31,7 +31,7 @@ podcasts = [
     ('Best Linux Games',
      'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'),
     ('Boiling Steam', 'https://boilingsteam.com/feed/podcast/boilingsteam-regular'),
-    ('Bryan Lunduke', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCglkWuyZDppWD2BVsyI4r3A'),
+    ('Bryan Lunduke', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA'),
     ('Bug Report', 'https://bugreport.co.uk/bug_report_ogg.rss'),
     ('Destination Linux', 'https://destinationlinux.org/feed/mp3/'),
     ('Floss Weekly', 'http://feeds.twit.tv/floss.xml'),
