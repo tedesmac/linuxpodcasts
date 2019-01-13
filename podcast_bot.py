@@ -42,6 +42,7 @@ from podcasts import podcasts as linux_podcasts
 FILE_NAME = 'last_loop.json'
 RE_HTML_TAG = re.compile(r'<.*?>')
 RE_HTTP = re.compile(r'^https?://')
+RE_POPULAR_SITE = re.compile(r'youtube\.com|youtu\.be|soundcloud\.com')
 
 
 def get_last_loop_date(now: datetime) -> datetime:
@@ -88,14 +89,20 @@ def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
     return comment
 
 
+def is_popular_site(url: str) -> bool:
+    match = RE_POPULAR_SITE.search(url)
+    return match != None
+
+
 def is_repost(subreddit: praw.models.Subreddit, url: str, title: str) -> bool:
-    url = remove_http_protocol(url)
-    if 'youtube' in url or 'youtu.be' in url:
+    # Reddit's search doesn't work as expected if the url comes from a popular site.
+    if is_popular_site(url):
         query = 'title:"{}"'.format(title)
     else:
+        url = remove_http_protocol(url)
         query = 'url:{}'.format(url)
     search = subreddit.search(query)
-    for entry_ in search:
+    for _ in search:
         return True
     return False
 
@@ -220,8 +227,13 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
 
             logging.debug('Fetching {} feed\n'.format(name))
 
-            # Only check the first entry
-            entry = feed.entries[0]
+            # Prevents the script from crashing if the feed wasn't correctly fetched
+            try:
+                # Only check the first entry
+                entry = feed.entries[0]
+            except:
+                continue
+
             published = datetime(*entry.published_parsed[:6])
             delta = last_loop - published
 
