@@ -109,10 +109,6 @@ podcasts = [
         'https://feeds.feedburner.com/linuxfortherestofus'
     ),
     (
-        'Linux Game Cast',
-        'https://linuxgamecast.com/feed/'
-    ),
-    (
         'Linux Ham Shack',
         'http://lhspodcast.info/category/podcast-ogg/feed'
     ),
