@@ -45,6 +45,10 @@ podcasts = [
         'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'
     ),
     (
+        'Big Daddy Linux',
+        'https://www.youtube.com/feeds/videos.xml?channel_id=UCtZRKfyvx7GUEi-Lr7f4Nxg'
+    ),
+    (
         'Boiling Steam',
         'https://boilingsteam.com/feed/podcast/boilingsteam-regular'
     ),
@@ -133,6 +137,10 @@ podcasts = [
         'http://mostlylinux.libsyn.com/rss'
     ),
     (
+        'Off Topical',
+        'http://feed.offtopical.net/'
+    ),
+    (
         'Open Source Security Podcast',
         'https://opensourcesecuritypodcast.libsyn.com/rss'
     ),
@@ -151,6 +159,10 @@ podcasts = [
     (
         'The Linux Link Tech Show',
         'https://feeds.feedburner.com/TheLinuxLinkTechShowOgg-vorbisFeed'
+    ),
+    (
+        'This Week in Linux',
+        'https://tuxdigital.com/feed/thisweekinlinux-ogg'
     ),
     (
         'Ubuntu Podcast',
