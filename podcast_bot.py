@@ -52,7 +52,7 @@ def get_last_loop_date(now: datetime) -> datetime:
             logging.info('{} readed with date {}'.format(
                 FILE_NAME, last_loop
             ))
-    except (FileNotFoundError, TypeError):
+    except (FileNotFoundError, TypeError, ValueError):
         last_loop = datetime.now()
         logging.info(
             'Could not read {}, last_loop variable will be set to {}'.format(
@@ -229,9 +229,9 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
 
             # Prevents the script from crashing if the feed wasn't correctly fetched
             try:
-                # Only check the first entry
+                # Only checks the first entry
                 entry = feed.entries[0]
-            except:
+            except IndexError:
                 continue
 
             published = datetime(*entry.published_parsed[:6])
@@ -257,7 +257,7 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
                     '\n\tSummary: {}'
                     '\n\tLink: {}\n'.format(name, title, summary, link)
                 )
-                time.sleep(5)
+                time.sleep(10)
             elif debug:
                 logging.debug(
                     'New entry for {}:'
@@ -265,12 +265,12 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
                     '\n\tSummary: {}'
                     '\n\tLink: {}\n'.format(name, title, summary, link)
                 )
-                time.sleep(5)
+                time.sleep(10)
 
         save_last_loop_date(now)
 
         # Sleeps for 1 hour before repeating the process
-        time.sleep(60*sleep if not debug else 5)
+        time.sleep(60*sleep if not debug else 10)
 
 
 if __name__ == '__main__':
