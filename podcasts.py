@@ -24,33 +24,140 @@ SOFTWARE.
 
 podcasts = [
     # (Podcast's name,  RSS feed url)
-    ('.XPenguin', 'http://xpenguin.club/rss.xml'),
-    ('Advance Tech Podcast', 'https://advancetechmedia.org/episode/index.xml'),
-    ('Ask Noah', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC6fENpYcDzxfxqGqrsstZRA'),
-    ('Bad Voltage', 'https://www.badvoltage.org/feed/ogg/'),
-    ('Best Linux Games',
-     'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'),
-    ('Boiling Steam', 'https://boilingsteam.com/feed/podcast/boilingsteam-regular'),
-    ('Bryan Lunduke', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA'),
-    ('Bug Report', 'https://bugreport.co.uk/bug_report_ogg.rss'),
-    ('Destination Linux', 'https://destinationlinux.org/feed/mp3/'),
-    ('Floss Weekly', 'http://feeds.twit.tv/floss.xml'),
-    ('Free as in Freedom', 'http://faif.us/feeds/cast-ogg/'),
-    ('Going Linux', 'http://goinglinux.com/oggpodcast.xml'),
-    ('Jupiter Broadcasting', 'http://feed.jupiter.zone/allshows'),
-    ('Late Night Linux', 'https://latenightlinux.com/feed/all'),
-    ('Linux Game Cast', 'https://linuxgamecast.com/feed/'),
-    ('Linux Kernel Podcast', 'http://jcm.libsyn.com/rss'),
-    ('Linux Lads', 'https://linuxlads.com/feed_ogg.rss'),
-    ('Matt Hartley', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCbHXJGd7c8Hy4z0-YX1Jf3Q'),
-    ('mintCast', 'https://mintcast.org/category/ogg/feed'),
-    ('Mostly Linux', 'http://mostlylinux.libsyn.com/rss'),
-    ('Open Source Security Podcast',
-     'https://opensourcesecuritypodcast.libsyn.com/rss'),
-    ('Simply Elementary',
-     'http://feeds.soundcloud.com/users/soundcloud:users:160113131/sounds.rss'),
-    ('The Linux Link Tech Show',
-     'https://feeds.feedburner.com/TheLinuxLinkTechShowOgg-vorbisFeed'),
-    ('Ubuntu Podcast', 'http://ubuntupodcast.org/feed/podcast/'),
-    ('Ubuntu Security Podcast', 'https://ubuntusecuritypodcast.org/episode/index.xml'),
+    (
+        '.XPenguin',
+        'http://xpenguin.club/rss.xml'
+    ),
+    (
+        'Advance Tech Podcast',
+        'https://advancetechmedia.org/episode/index.xml'
+    ),
+    (
+        'Ask Noah',
+        'https://www.youtube.com/feeds/videos.xml?channel_id=UC6fENpYcDzxfxqGqrsstZRA'
+    ),
+    (
+        'Bad Voltage',
+        'https://www.badvoltage.org/feed/ogg/'
+    ),
+    (
+        'Best Linux Games',
+        'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'
+    ),
+    (
+        'Boiling Steam',
+        'https://boilingsteam.com/feed/podcast/boilingsteam-regular'
+    ),
+    (
+        'Bryan Lunduke',
+        'https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA'
+    ),
+    (
+        'Bug Report',
+        'https://bugreport.co.uk/bug_report_ogg.rss'
+    ),
+    (
+        'Command Line Heroes',
+        'https://feeds.pacific-content.com/commandlineheroes'
+    ),
+    (
+        'Destination Linux',
+        'https://destinationlinux.org/feed/mp3/'
+    ),
+    (
+        'EmacsCast',
+        'https://pinecast.com/feed/emacscast'
+    ),
+    (
+        'Fediverse Cast',
+        'https://fediversecast.com/feed/'
+    ),
+    (
+        'Floss Weekly',
+        'http://feeds.twit.tv/floss.xml'
+    ),
+    (
+        'Free as in Freedom',
+        'http://faif.us/feeds/cast-ogg/'
+    ),
+    (
+        'Going Linux',
+        'http://goinglinux.com/oggpodcast.xml'
+    ),
+    (
+        'GNU World Order',
+        'http://gnuworldorder.info/ogg.xml'
+    ),
+    (
+        'Jupiter Broadcasting',
+        'http://feed.jupiter.zone/allshows'
+    ),
+    (
+        'Late Night Linux',
+        'https://latenightlinux.com/feed/all'
+    ),
+    (
+        'Libre Lounge',
+        'https://librelounge.org/rss-feed.rss'
+    ),
+    (
+        'Linux For The Rest Of Us',
+        'https://feeds.feedburner.com/linuxfortherestofus'
+    ),
+    (
+        'Linux Game Cast',
+        'https://linuxgamecast.com/feed/'
+    ),
+    (
+        'Linux Ham Shack',
+        'http://lhspodcast.info/category/podcast-ogg/feed'
+    ),
+    (
+        'Linux Kernel Podcast',
+        'http://jcm.libsyn.com/rss'
+    ),
+    (
+        'Linux Lads',
+        'https://linuxlads.com/feed_ogg.rss'
+    ),
+    (
+        'Matt Hartley',
+        'https://www.youtube.com/feeds/videos.xml?channel_id=UCbHXJGd7c8Hy4z0-YX1Jf3Q'
+    ),
+    (
+        'mintCast',
+        'https://mintcast.org/category/ogg/feed'
+    ),
+    (
+        'Mostly Linux',
+        'http://mostlylinux.libsyn.com/rss'
+    ),
+    (
+        'Open Source Security Podcast',
+        'https://opensourcesecuritypodcast.libsyn.com/rss'
+    ),
+    (
+        'Simply Elementary',
+        'http://feeds.soundcloud.com/users/soundcloud:users:160113131/sounds.rss'
+    ),
+    (
+        'Sunday Morning Linux Review',
+        'https://smlr.us/?feed=podcast'
+    ),
+    (
+        'The Binary Times',
+        'https://feeds.feedburner.com/thebinarytimes/LLjt'
+    ),
+    (
+        'The Linux Link Tech Show',
+        'https://feeds.feedburner.com/TheLinuxLinkTechShowOgg-vorbisFeed'
+    ),
+    (
+        'Ubuntu Podcast',
+        'http://ubuntupodcast.org/feed/podcast/'
+    ),
+    (
+        'Ubuntu Security Podcast',
+        'https://ubuntusecuritypodcast.org/episode/index.xml'
+    ),
 ]
