@@ -45,10 +45,6 @@ podcasts = [
         'http://feeds.soundcloud.com/users/soundcloud:users:59417723/sounds.rss'
     ),
     (
-        'Big Daddy Linux',
-        'https://www.youtube.com/feeds/videos.xml?channel_id=UCtZRKfyvx7GUEi-Lr7f4Nxg'
-    ),
-    (
         'Boiling Steam',
         'https://boilingsteam.com/feed/podcast/boilingsteam-regular'
     ),
