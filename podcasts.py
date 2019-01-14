@@ -73,6 +73,10 @@ podcasts = [
         'https://fediversecast.com/feed/'
     ),
     (
+        'FLOSS for Science',
+        'https://flossforscience.com/feed_ogg.xml'
+    ),
+    (
         'Floss Weekly',
         'http://feeds.twit.tv/floss.xml'
     ),
@@ -149,8 +153,20 @@ podcasts = [
         'https://feeds.feedburner.com/thebinarytimes/LLjt'
     ),
     (
+        'The Changelog',
+        'https://changelog.com/podcast/feed'
+    ),
+    (
+        'The History of GNOME',
+        'https://www.bassi.io/category/history/podcast.xml'
+    ),
+    (
         'The Linux Link Tech Show',
         'https://feeds.feedburner.com/TheLinuxLinkTechShowOgg-vorbisFeed'
+    ),
+    (
+        'Third World Linux',
+        'https://feeds.feedburner.com/thirdworldlinuxogg'
     ),
     (
         'This Week in Linux',
