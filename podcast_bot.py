@@ -25,42 +25,20 @@ SOFTWARE.
 """
 
 import click
-from datetime import datetime
 import feedparser
 import json
 import html
 import logging
-from logging.handlers import RotatingFileHandler
 from markdownify import markdownify
 import praw
 import re
 import time
-
-from podcasts import podcasts as linux_podcasts
 
 
 FILE_NAME = 'last_loop.json'
 RE_HTML_TAG = re.compile(r'<.*?>')
 RE_HTTP = re.compile(r'^https?://')
 RE_POPULAR_SITE = re.compile(r'youtube\.com|youtu\.be|soundcloud\.com')
-
-
-def get_last_loop_date(now: datetime) -> datetime:
-    try:
-        with open(FILE_NAME) as file:
-            last_loop = datetime(*json.loads(file.read()))
-            logging.info('{} readed with date {}'.format(
-                FILE_NAME, last_loop
-            ))
-    except (FileNotFoundError, TypeError, ValueError):
-        last_loop = datetime.now()
-        logging.info(
-            'Could not read {}, last_loop variable will be set to {}'.format(
-                FILE_NAME,
-                now
-            )
-        )
-    return last_loop
 
 
 def get_summary(entry: feedparser.FeedParserDict) -> str:
@@ -117,20 +95,6 @@ def remove_http_protocol(url: str) -> str:
         end = match.end(0)
         return url[end:]
     return url
-
-
-def save_last_loop_date(date: datetime):
-    with open(FILE_NAME, 'w') as file:
-        file.write('[{}, {}, {}, {}, {}, {}, {}]'.format(
-            date.year,
-            date.month,
-            date.day,
-            date.hour,
-            date.minute,
-            date.second,
-            date.microsecond
-        ))
-        logging.info('{} writted'.format(FILE_NAME))
 
 
 def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss_link, title, summary, link):
@@ -192,11 +156,30 @@ def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss
     type=click.INT,
     help='Sleep time in minutes.'
 )
-def main(client_id, client_secret, debug, password, user_agent, username, sleep):
+@click.argument(
+    'podcasts',
+    nargs=1,
+    type=click.Path(exists=True, resolve_path=True)
+)
+@click.argument(
+    'subreddit',
+    nargs=1,
+    type=click.STRING
+)
+def main(client_id, client_secret, debug, password, podcasts, subreddit, user_agent, username, sleep):
     """
-    Simple bot that submits podcasts to r/linuxpodcasts
+    Simple bot that submits podcasts to reddit
 
-    Usage:\tpython3 bot.py
+    Arguments:
+
+    \tPODCASTS: JSON file with a list of RSS feeds.\n
+    \tSUBREDDIT: Subreddit's name.
+
+    Usage:
+
+    \tpython3 podcast_bot.py podcasts.json linuxpodcasts
+
+    See README.md for more information.
     """
 
     logging.basicConfig(
@@ -204,25 +187,27 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
         level=logging.DEBUG if debug else logging.INFO
     )
 
+    reddit = praw.Reddit(
+        client_id=client_id,
+        client_secret=client_secret,
+        password=password,
+        user_agent=user_agent,
+        username=username
+    )
+
+    if reddit.read_only:
+        raise 'Login error: Reddit instance is read only, can not submit posts'
+
+    subreddit = reddit.subreddit(subreddit)
+
+    with open(podcasts) as file:
+        podcasts = json.loads(file.read())
+
     while True:
-        reddit = praw.Reddit(
-            client_id=client_id,
-            client_secret=client_secret,
-            password=password,
-            user_agent=user_agent,
-            username=username
-        )
 
-        if reddit.read_only:
-            raise 'Login error: Reddit instance is read only, can not submit posts'
-
-        subreddit = reddit.subreddit('linuxpodcasts')
-
-        now = datetime.now()
-        last_loop = get_last_loop_date(now)
-
-        for podcast in linux_podcasts:
-            name, href = podcast
+        for podcast in podcasts:
+            href = podcast['href']
+            name = podcast['name']
             feed = feedparser.parse(href)
 
             logging.debug('Fetching {} feed\n'.format(name))
@@ -234,16 +219,13 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
             except IndexError:
                 continue
 
-            published = datetime(*entry.published_parsed[:6])
-            delta = last_loop - published
-
             title = entry.title
             link = entry.link
             summary = get_summary(entry)
 
             repost = is_repost(subreddit, link, title)
 
-            if delta.total_seconds() < 0 and not repost and not debug:
+            if repost and not debug:
                 submit_post(reddit, subreddit, name,
                             href, title, summary, link)
 
@@ -267,11 +249,10 @@ def main(client_id, client_secret, debug, password, user_agent, username, sleep)
                 )
                 time.sleep(10)
 
-        save_last_loop_date(now)
-
         # Sleeps for 1 hour before repeating the process
-        time.sleep(60*sleep if not debug else 10)
+        time.sleep(60*sleep)
 
 
 if __name__ == '__main__':
     main()
+

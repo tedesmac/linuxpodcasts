@@ -187,3 +187,4 @@ class TestRemoveProtocol:
         url = 'htps:fake-domain.com'
         new_url = remove_http_protocol(url)
         assert url == new_url
+
