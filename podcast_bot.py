@@ -200,12 +200,12 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
     subreddit = reddit.subreddit(subreddit)
 
-    with open(podcasts) as file:
-        podcasts = json.loads(file.read())
-
     while True:
 
-        for podcast in podcasts:
+        with open(podcasts) as file:
+            podcasts_data = json.loads(file.read())
+
+        for podcast in podcasts_data:
             href = podcast['href']
             name = podcast['name']
             feed = feedparser.parse(href)
