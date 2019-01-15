@@ -225,7 +225,7 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
             repost = is_repost(subreddit, link, title)
 
-            if repost and not debug:
+            if not repost and not debug:
                 submit_post(reddit, subreddit, name,
                             href, title, summary, link)
 
