@@ -129,6 +129,16 @@ class TestIsRepost:
         title = 'Late Night Linux - Episode 54'
         assert is_repost(subreddit, url, title) == True
 
+    def test_google_repost(self):
+        url = 'http://feedproxy.google.com/~r/thirdworldlinuxogg/~3/Y9NktOiaiMU/third-world-linux-happy-holidays-and.html'
+        title = 'Happy Holidays and Some Songs 2017'
+        assert is_repost(subreddit, url, title)
+
+    def test_google_no_repost(self):
+        url = 'https://books.google.com.mx/books?id=ZBKsMYz1Q4kC&printsec=frontcover&dq=linux&hl=en&sa=X&ved=0ahUKEwi6yqrYxvLfAhU1NX0KHTKsARQQ6AEIKjAA#v=onepage&q=linux&f=false'
+        title = 'Happy Holidays and Some Songs 2017'
+        assert is_repost(subreddit, url, title)
+
     def test_souncloud_no_repost(self):
         url = 'https://soundcloud.com/noms-tunes/missing-you'
         title = 'Missing You'
@@ -187,4 +197,3 @@ class TestRemoveProtocol:
         url = 'htps:fake-domain.com'
         new_url = remove_http_protocol(url)
         assert url == new_url
-

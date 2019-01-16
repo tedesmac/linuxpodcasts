@@ -38,7 +38,9 @@ import time
 FILE_NAME = 'last_loop.json'
 RE_HTML_TAG = re.compile(r'<.*?>')
 RE_HTTP = re.compile(r'^https?://')
-RE_POPULAR_SITE = re.compile(r'youtube\.com|youtu\.be|soundcloud\.com')
+RE_POPULAR_SITE = re.compile(
+    r'google\.com|soundcloud\.com|youtube\.com|youtu\.be'
+)
 
 
 def get_summary(entry: feedparser.FeedParserDict) -> str:
@@ -255,4 +257,3 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
 if __name__ == '__main__':
     main()
-
