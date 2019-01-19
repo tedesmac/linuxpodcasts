@@ -25,6 +25,7 @@ SOFTWARE.
 """
 
 import click
+from datetime import datetime
 import feedparser
 import json
 import html
@@ -202,7 +203,11 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
     subreddit = reddit.subreddit(subreddit)
 
+    last_updated = {}
+
     while True:
+
+        now = datetime.now()
 
         with open(podcasts) as file:
             podcasts_data = json.loads(file.read())
@@ -210,6 +215,16 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
         for podcast in podcasts_data:
             href = podcast['href']
             name = podcast['name']
+
+            # Only checks if a podcasts has a new entry every 24 hours.
+            delta_time = now - last_updated.get(
+                name, datetime(2000, 12, 31, 59, 59)
+            )
+            if delta_time.total_seconds() < 86400:
+                continue
+
+            last_updated[name] = now
+
             feed = feedparser.parse(href)
 
             logging.debug('Fetching {} feed\n'.format(name))
@@ -219,6 +234,7 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
                 # Only checks the first entry
                 entry = feed.entries[0]
             except IndexError:
+                logging.warning('Could not fetch entries for: {}'.format(name))
                 continue
 
             title = entry.title
@@ -252,6 +268,9 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
                 time.sleep(10)
 
         # Sleeps for 1 hour before repeating the process
+        logging.info(
+            'Process finished, script Will sleep for {} minutes'.format(sleep)
+        )
         time.sleep(60*sleep)
 
 
