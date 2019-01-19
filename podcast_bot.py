@@ -218,7 +218,7 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
             # Only checks if a podcasts has a new entry every 24 hours.
             delta_time = now - last_updated.get(
-                name, datetime(2000, 12, 31, 59, 59)
+                name, datetime(2000, 12, 31, 23, 59, 59)
             )
             if delta_time.total_seconds() < 86400:
                 continue
