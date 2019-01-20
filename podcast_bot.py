@@ -203,11 +203,7 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
 
     subreddit = reddit.subreddit(subreddit)
 
-    last_updated = {}
-
     while True:
-
-        now = datetime.now()
 
         with open(podcasts) as file:
             podcasts_data = json.loads(file.read())
@@ -216,18 +212,9 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
             href = podcast['href']
             name = podcast['name']
 
-            # Only checks if a podcasts has a new entry every 24 hours.
-            delta_time = now - last_updated.get(
-                name, datetime(2000, 12, 31, 23, 59, 59)
-            )
-            if delta_time.total_seconds() < 86400:
-                continue
-
-            last_updated[name] = now
-
             feed = feedparser.parse(href)
 
-            logging.debug('Fetching {} feed\n'.format(name))
+            logging.info('Fetching {}\'s feed\n'.format(name))
 
             # Prevents the script from crashing if the feed wasn't correctly fetched
             try:
