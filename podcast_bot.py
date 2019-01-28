@@ -54,13 +54,27 @@ def get_summary(entry: feedparser.FeedParserDict) -> str:
         return ''
 
 
-def get_title(name: str, title: str) -> str:
+def get_title(entry: feedparser.FeedParserDict, podcast_name: str) -> str:
     """
     Adds podcast's name to title if it is not in it
     """
-    name_lower = name.lower()
+    title = entry.title
+    try:
+        duration = entry.duration
+    except (AttributeError, KeyError):
+        duration = ''
+
+    name_lower = podcast_name.lower()
     title_lower = title.lower()
-    return title if name_lower in title_lower else '{} - {}'.format(name, title)
+
+    res = title if name_lower in title_lower else '{} - {}'.format(
+        podcast_name, title
+    )
+
+    if duration:
+        res = '{} - [{}]'.format(res, duration)
+
+    return res
 
 
 def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
@@ -76,7 +90,8 @@ def is_popular_site(url: str) -> bool:
 
 
 def is_repost(subreddit: praw.models.Subreddit, url: str, title: str) -> bool:
-    # Reddit's search doesn't work as expected if the url comes from a popular site.
+    # Reddit's search doesn't work as expected if the url comes from a popular
+    # site.
     if is_popular_site(url):
         query = 'title:"{}"'.format(title)
     else:
@@ -100,19 +115,20 @@ def remove_http_protocol(url: str) -> str:
     return url
 
 
-def submit_post(reddit: praw.Reddit, subreddit: praw.models.Subreddit, name, rss_link, title, summary, link):
-    title = get_title(name, title)
+def submit_post(entry: feedparser.FeedParserDict, podcast_name: str, reddit: praw.Reddit, rss_link: str, subreddit: praw.models.Subreddit):
+    summary = get_summary(entry)
+    title = get_title(podcast_name, entry)
 
-    submission_id = subreddit.submit(title, url=link)
+    submission_id = subreddit.submit(title, url=entry.link)
     submission = reddit.submission(id=submission_id)
-    comment = format_comment(title, summary, link, rss_link)
+    comment = format_comment(title, summary, entry.link, rss_link)
     submission.reply(comment)
 
     logging.info(
         'New entry submitted:'
         '\n\tTitle: {}'
         '\n\tSummary: {}'
-        '\n\tLink: {}\n'.format(title, summary, link)
+        '\n\tLink: {}\n'.format(title, summary, entry.link)
     )
     logging.info(
         'Commented on entry for {}:'
@@ -209,30 +225,30 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
             podcasts_data = json.loads(file.read())
 
         for podcast in podcasts_data:
-            href = podcast['href']
-            name = podcast['name']
+            rss_url = podcast['href']
+            podcast_name = podcast['name']
 
-            feed = feedparser.parse(href)
+            feed = feedparser.parse(rss_url)
 
-            logging.info('Fetching {}\'s feed\n'.format(name))
+            logging.info('Fetching {}\'s feed\n'.format(podcast_name))
 
-            # Prevents the script from crashing if the feed wasn't correctly fetched
+            # Prevents the script from crashing if the feed wasn't correctly
+            # fetched
             try:
                 # Only checks the first entry
                 entry = feed.entries[0]
             except IndexError:
-                logging.warning('Could not fetch entries for: {}'.format(name))
+                logging.warning(
+                    'Could not fetch entries for: {}'.format(podcast_name))
                 continue
 
             title = entry.title
             link = entry.link
-            summary = get_summary(entry)
 
             repost = is_repost(subreddit, link, title)
 
             if not repost and not debug:
-                submit_post(reddit, subreddit, name,
-                            href, title, summary, link)
+                submit_post(entry, podcast_name, reddit, rss_link, subreddit)
 
                 # sleeps 20 minutes before posting anything else
                 time.sleep(20*60)
@@ -241,16 +257,14 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
                 logging.debug(
                     'Repost for {}:'
                     '\n\tTitle: {}'
-                    '\n\tSummary: {}'
-                    '\n\tLink: {}\n'.format(name, title, summary, link)
+                    '\n\tLink: {}\n'.format(podcast_name, title, link)
                 )
                 time.sleep(10)
             elif debug:
                 logging.debug(
                     'New entry for {}:'
                     '\n\tTitle: {}'
-                    '\n\tSummary: {}'
-                    '\n\tLink: {}\n'.format(name, title, summary, link)
+                    '\n\tLink: {}\n'.format(podcast_name, title, link)
                 )
                 time.sleep(10)
 
