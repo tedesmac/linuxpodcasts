@@ -86,7 +86,7 @@ def format_comment(title: str, summary: str, link: str, rss_link: str) -> str:
 
 def is_popular_site(url: str) -> bool:
     match = RE_POPULAR_SITE.search(url)
-    return match != None
+    return match is not None
 
 
 def is_repost(subreddit: praw.models.Subreddit, url: str, title: str) -> bool:
@@ -225,10 +225,10 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
             podcasts_data = json.loads(file.read())
 
         for podcast in podcasts_data:
-            rss_url = podcast['href']
+            rss_link = podcast['href']
             podcast_name = podcast['name']
 
-            feed = feedparser.parse(rss_url)
+            feed = feedparser.parse(rss_link)
 
             logging.info('Fetching {}\'s feed\n'.format(podcast_name))
 
