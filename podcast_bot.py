@@ -117,7 +117,7 @@ def remove_http_protocol(url: str) -> str:
 
 def submit_post(entry: feedparser.FeedParserDict, podcast_name: str, reddit: praw.Reddit, rss_link: str, subreddit: praw.models.Subreddit):
     summary = get_summary(entry)
-    title = get_title(podcast_name, entry)
+    title = get_title(entry, podcast_name)
 
     submission_id = subreddit.submit(title, url=entry.link)
     submission = reddit.submission(id=submission_id)
