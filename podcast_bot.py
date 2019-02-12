@@ -237,13 +237,12 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
             try:
                 # Only checks the first entry
                 entry = feed.entries[0]
-            except IndexError:
+                link = entry.link
+                title = entry.title
+            except (AttributeError, IndexError, KeyError):
                 logging.warning(
-                    'Could not fetch entries for: {}'.format(podcast_name))
+                    'Could not fetch feed for: {}'.format(podcast_name))
                 continue
-
-            title = entry.title
-            link = entry.link
 
             repost = is_repost(subreddit, link, title)
 
