@@ -224,6 +224,12 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
         with open(podcasts) as file:
             podcasts_data = json.loads(file.read())
 
+        try:
+            with open('.reposts.json', 'r') as file:
+                reposts_data = json.loads(file.read())
+        except FileNotFoundError:
+            reposts_data = {}
+
         for podcast in podcasts_data:
             rss_link = podcast['href']
             podcast_name = podcast['name']
@@ -244,10 +250,37 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
                     'Could not fetch feed for: {}'.format(podcast_name))
                 continue
 
-            repost = is_repost(subreddit, link, title)
+            if podcast_name in reposts_data:
+                if reposts_data[podcast_name] == link:
+                    if debug:
+                        logging.debug(
+                            'Repost for {}:'
+                            '\n\tTitle: {}'
+                            '\n\tLink: {}\n'.format(podcast_name, title, link)
+                        )
+                        time.sleep(10)
+                    continue
+
+
+            try:
+                repost = is_repost(subreddit, link, title)
+            except praw.exceptions.PRAWException:
+                # Will skip this entry until the next cycle
+                continue
 
             if not repost and not debug:
-                submit_post(entry, podcast_name, reddit, rss_link, subreddit)
+                try:
+                    submit_post(
+                        entry,
+                        podcast_name,
+                        reddit,
+                        rss_link,
+                        subreddit
+                    )
+                    reposts_data[podcast_name] = link
+                except praw.exceptions.PRAWException:
+                    logging.warning('Failed to submit entry')
+                    continue
 
                 # sleeps 20 minutes before posting anything else
                 time.sleep(20*60)
@@ -267,6 +300,9 @@ def main(client_id, client_secret, debug, password, podcasts, subreddit, user_ag
                 )
                 time.sleep(10)
 
+
+        with open('.reposts.json', 'w') as file:
+            file.write(json.dumps(reposts_data))
         # Sleeps for 1 hour before repeating the process
         logging.info(
             'Process finished, script Will sleep for {} minutes'.format(sleep)
