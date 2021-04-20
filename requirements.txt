@@ -16,7 +16,7 @@ more-itertools==5.0.0
 pluggy==0.8.0
 praw==6.0.0
 prawcore==1.0.0
-py==1.7.0
+py==1.10.0
 pycodestyle==2.4.0
 pylint==2.2.2
 pytest==4.1.0
